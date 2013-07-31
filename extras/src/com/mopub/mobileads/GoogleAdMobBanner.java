@@ -53,11 +53,12 @@ import static com.mopub.mobileads.MoPubErrorCode.NETWORK_NO_FILL;
  * Compatible with version 6.4.1 of the Google AdMob Ads SDK.
  */
 
-class GoogleAdMobBanner extends CustomEventBanner implements AdListener {
+public class GoogleAdMobBanner extends CustomEventBanner implements AdListener {
     public static final String AD_UNIT_ID_KEY = "adUnitID";
     public static final String AD_WIDTH_KEY = "adWidth";
     public static final String AD_HEIGHT_KEY = "adHeight";
     public static final String LOCATION_KEY = "location";
+    public static final String KEYWORDS_KEY = "adKeywords";
 
     private AdView mAdMobView;
     private CustomEventBannerListener mBannerListener;
@@ -98,8 +99,12 @@ class GoogleAdMobBanner extends CustomEventBanner implements AdListener {
         mAdMobView.setAdListener(this);
 
         AdRequest request = new AdRequest();
+
         Location location = extractLocation(localExtras);
         if (location != null) request.setLocation(location);
+
+        Set<String> keywords = extractKeywords(serverExtras, localExtras);
+        if (keywords != null && keywords.size() > 0) request.setKeywords(keywords);
 
         mAdMobView.loadAd(request);
     }
@@ -115,6 +120,25 @@ class GoogleAdMobBanner extends CustomEventBanner implements AdListener {
         if (location instanceof Location) {
             return (Location) location;
         }
+        return null;
+    }
+
+    private Set<String> extractKeywords(Map<String, String> serverExtras, Map<String, Object> localExtras) {
+        // Try to get keywords from serverExtras
+        String serverKeywords = serverExtras.get(KEYWORDS_KEY);
+        if (serverKeywords != null) {
+            Set<String> keywordSet = new HashSet<String>();
+            keywordSet.addAll(Arrays.<String>asList(TextUtils.split(serverKeywords, ",")));
+            return keywordSet;
+        }
+        // Try to get keywords from localExtras as serverExtras didn't have any
+        Object localKeywords = localExtras.get(KEYWORDS_KEY);
+        if (localKeywords instanceof String[]) {
+            Set<String> keywordSet = new HashSet<String>();
+            keywordSet.addAll(Arrays.<String>asList((String[]) localKeywords));
+            return keywordSet;
+        }
+        // No keywords found so return null
         return null;
     }
 
