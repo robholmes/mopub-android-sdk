@@ -192,14 +192,26 @@ class HtmlWebViewClient extends WebViewClient {
         try {
             mContext.startActivity(intent);
         } catch (ActivityNotFoundException e) {
-            String action = intent.getAction();
+            /*String action = intent.getAction();
             Log.w("MoPub", "Could not handle intent action: " + action
                     + ". Perhaps you forgot to declare com.mopub.mobileads.MraidBrowser"
                     + " in your Android manifest file.");
 
             mContext.startActivity(
                     new Intent(Intent.ACTION_VIEW, Uri.parse("about:blank"))
-                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));
+                            .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK));*/
+
+            try {
+                intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url))
+                        .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
+
+                mContext.startActivity(intent);
+            }
+            catch (ActivityNotFoundException e2) {
+                Log.w("MoPub", "Could not handle intent action: " + intent.getAction()
+                        + ". URL: " + url
+                        + " Could it be that there is no browser installed?");
+            }
         }
     }
 
