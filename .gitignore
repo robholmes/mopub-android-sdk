@@ -1,5 +1,6 @@
 .DS_Store
 .git.bak/
+.idea
 .idea/workspace.xml
 .idea/uiDesigner.xml
 ant_build/
