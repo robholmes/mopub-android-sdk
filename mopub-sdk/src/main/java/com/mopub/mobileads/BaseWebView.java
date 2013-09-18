@@ -3,8 +3,10 @@ package com.mopub.mobileads;
 import android.content.Context;
 import android.util.Log;
 import android.webkit.WebView;
+
 import com.mopub.mobileads.util.VersionCode;
 
+import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class BaseWebView extends WebView {
@@ -24,17 +26,28 @@ public class BaseWebView extends WebView {
         }
 
         if (VersionCode.currentApiLevel().isBelow(VersionCode.FROYO)) {
-            getSettings().setPluginsEnabled(enabled);
-        } else {
+            Class<?>[] parameters = { boolean.class };
+            Method method;
             try {
-                Class<Enum> pluginStateClass = (Class<Enum>) Class.forName("android.webkit.WebSettings$PluginState");
+                method = getSettings().getClass()
+                        .getDeclaredMethod("setPluginsEnabled", parameters);
+                method.invoke(getSettings(), false);
+            }
+            catch (Exception e) {
+            }
+        }
+        else {
+            try {
+                Class<Enum> pluginStateClass = (Class<Enum>) Class
+                        .forName("android.webkit.WebSettings$PluginState");
 
-                Class<?>[] parameters = {pluginStateClass};
+                Class<?>[] parameters = { pluginStateClass };
                 Method method = getSettings().getClass().getDeclaredMethod("setPluginState", parameters);
 
                 Object pluginState = Enum.valueOf(pluginStateClass, enabled ? "ON" : "OFF");
                 method.invoke(getSettings(), pluginState);
-            } catch (Exception e) {
+            }
+            catch (Exception e) {
                 Log.d("MoPub", "Unable to modify WebView plugin state.");
             }
         }
