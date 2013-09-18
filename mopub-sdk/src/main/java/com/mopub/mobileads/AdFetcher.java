@@ -34,13 +34,16 @@
 
 package com.mopub.mobileads;
 
-import android.os.Build;
 import android.util.Log;
+import com.mopub.mobileads.factories.AdFetchTaskFactory;
+import com.mopub.mobileads.util.VersionCode;
 
 import java.lang.reflect.Field;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Executor;
+
+import static com.mopub.mobileads.util.VersionCode.ICE_CREAM_SANDWICH;
 
 /*
  * AdFetcher is a delegate of an AdViewController that handles loading ad data over a
@@ -63,6 +66,7 @@ public class AdFetcher {
     public static final String FULL_AD_TYPE_HEADER = "X-Fulladtype";
     public static final String REDIRECT_URL_HEADER = "X-Launchpage";
     public static final String CLICKTHROUGH_URL_HEADER = "X-Clickthrough";
+    public static final String AD_TIMEOUT_HEADER = "X-AdTimeout";
     public static final String SCROLLABLE_HEADER = "X-Scrollable";
 
     public static final String HTML_RESPONSE_BODY_KEY = "Html-Response-Body";
@@ -71,8 +75,6 @@ public class AdFetcher {
     public static final String SCROLLABLE_KEY = "Scrollable";
 
     private int mTimeoutMilliseconds = 10000;
-    // This is equivalent to Build.VERSION_CODES.ICE_CREAM_SANDWICH
-    private static final int VERSION_CODE_ICE_CREAM_SANDWICH = 14;
     private AdViewController mAdViewController;
 
     private AdFetchTask mCurrentTask;
@@ -102,9 +104,9 @@ public class AdFetcher {
             mCurrentTask.cancel(true);
         }
 
-        mCurrentTask = new AdFetchTask(mTaskTracker, mAdViewController, mUserAgent, mTimeoutMilliseconds);
+        mCurrentTask = AdFetchTaskFactory.create(mTaskTracker, mAdViewController, mUserAgent, mTimeoutMilliseconds);
 
-        if (Build.VERSION.SDK_INT >= VERSION_CODE_ICE_CREAM_SANDWICH) {
+        if (VersionCode.currentApiLevel().isAtLeast(ICE_CREAM_SANDWICH)) {
             Class<?> cls = AdFetchTask.class;
             Class<?>[] parameterTypes = {Executor.class, Object[].class};
 

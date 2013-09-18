@@ -18,6 +18,7 @@ import static com.mopub.mobileads.AdUrlGenerator.MoPubNetworkType.ETHERNET;
 import static com.mopub.mobileads.AdUrlGenerator.MoPubNetworkType.MOBILE;
 import static com.mopub.mobileads.AdUrlGenerator.MoPubNetworkType.UNKNOWN;
 import static com.mopub.mobileads.AdUrlGenerator.MoPubNetworkType.WIFI;
+import static com.mopub.mobileads.util.MraidUtils.isStorePictureSupported;
 
 public class AdUrlGenerator extends BaseUrlGenerator {
     public static final String DEVICE_ORIENTATION_PORTRAIT = "p";
@@ -31,6 +32,7 @@ public class AdUrlGenerator extends BaseUrlGenerator {
     private String mAdUnitId;
     private String mKeywords;
     private Location mLocation;
+    private boolean mFacebookSupportEnabled;
 
     public static enum MoPubNetworkType {
         UNKNOWN,
@@ -60,6 +62,11 @@ public class AdUrlGenerator extends BaseUrlGenerator {
         return this;
     }
 
+    public AdUrlGenerator withFacebookSupported(boolean enabled) {
+        mFacebookSupportEnabled = enabled;
+        return this;
+    }
+
     public AdUrlGenerator withLocation(Location location) {
         mLocation = location;
         return this;
@@ -77,7 +84,7 @@ public class AdUrlGenerator extends BaseUrlGenerator {
 
         setUdid(getUdidFromContext(mContext));
 
-        String keywords = AdUrlGenerator.addKeyword(mKeywords, AdUrlGenerator.getFacebookKeyword(mContext));
+        String keywords = AdUrlGenerator.addKeyword(mKeywords, AdUrlGenerator.getFacebookKeyword(mContext, mFacebookSupportEnabled));
         setKeywords(keywords);
 
         setLocation(mLocation);
@@ -100,6 +107,8 @@ public class AdUrlGenerator extends BaseUrlGenerator {
         setNetworkType(getActiveNetworkType());
 
         setAppVersion(getAppVersionFromContext(mContext));
+
+        setExternalStoragePermission(isStorePictureSupported(mContext));
 
         return getFinalUrlString();
     }
@@ -218,7 +227,11 @@ public class AdUrlGenerator extends BaseUrlGenerator {
         return format.format(DateAndTime.now());
     }
 
-    private static String getFacebookKeyword(Context context) {
+    private static String getFacebookKeyword(Context context, final boolean enabled) {
+        if (!enabled) {
+            return null;
+        }
+
         try {
             Class<?> facebookKeywordProviderClass = Class.forName("com.mopub.mobileads.FacebookKeywordProvider");
             Method getKeywordMethod = facebookKeywordProviderClass.getMethod("getKeyword", Context.class);
@@ -246,4 +259,5 @@ public class AdUrlGenerator extends BaseUrlGenerator {
             return keywords + "," + addition;
         }
     }
+
 }

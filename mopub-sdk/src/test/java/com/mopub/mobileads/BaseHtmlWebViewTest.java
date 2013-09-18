@@ -1,12 +1,17 @@
 package com.mopub.mobileads;
 
 import android.app.Activity;
+import android.os.Build;
 import com.mopub.mobileads.test.support.SdkTestRunner;
 import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.robolectric.Robolectric;
 import org.robolectric.shadows.ShadowWebView;
 
+import static android.webkit.WebSettings.PluginState;
+import static com.mopub.mobileads.util.VersionCode.HONEYCOMB_MR2;
+import static com.mopub.mobileads.util.VersionCode.ICE_CREAM_SANDWICH;
 import static org.fest.assertions.api.Assertions.assertThat;
 import static org.robolectric.Robolectric.shadowOf;
 
@@ -18,6 +23,17 @@ public class BaseHtmlWebViewTest {
     @Before
     public void setUp() throws Exception {
         subject = new BaseHtmlWebView(new Activity());
+    }
+
+    @Test
+    public void shouldEnablePluginsBasedOnApiLevel() throws Exception {
+        Robolectric.Reflection.setFinalStaticField(Build.VERSION.class, "SDK_INT", ICE_CREAM_SANDWICH.getApiLevel());
+        subject = new BaseHtmlWebView(new Activity());
+        assertThat(subject.getSettings().getPluginState()).isEqualTo(PluginState.ON);
+
+        Robolectric.Reflection.setFinalStaticField(Build.VERSION.class, "SDK_INT", HONEYCOMB_MR2.getApiLevel());
+        subject = new BaseHtmlWebView(new Activity());
+        assertThat(subject.getSettings().getPluginState()).isEqualTo(PluginState.OFF);
     }
 
     @Test

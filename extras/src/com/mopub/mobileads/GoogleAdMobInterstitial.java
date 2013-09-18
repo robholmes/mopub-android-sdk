@@ -165,7 +165,6 @@ public class GoogleAdMobInterstitial extends CustomEventInterstitial implements 
 
     @Override
     public void onLeaveApplication(Ad ad) {
-        // TODO: This only tracks clicks accurately if all clicks result in leaving the app.
         if (!mHasAlreadyRegisteredClick) {
             Log.d("MoPub", "Google AdMob interstitial ad clicked.");
             mHasAlreadyRegisteredClick = true;
